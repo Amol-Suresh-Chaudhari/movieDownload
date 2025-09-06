@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User.js').default;
 const Movie = require('../models/Movie.js').default;
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/allmovieshub';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function setupAdmin() {
   try {

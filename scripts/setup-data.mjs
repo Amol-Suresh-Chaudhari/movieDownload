@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/allmovieshub';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // User Schema
 const userSchema = new mongoose.Schema({

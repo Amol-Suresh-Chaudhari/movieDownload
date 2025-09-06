@@ -52,7 +52,6 @@ A modern, AI-powered movie streaming and download platform built with Next.js, f
 3. **Set up environment variables**
    Create a `.env.local` file with:
    ```env
-   MONGODB_URI=mongodb://localhost:27017/allmovieshub
    JWT_SECRET=your-super-secret-jwt-key
    OPENAI_API_KEY=your-openai-api-key
    ADMIN_SECRET_PATH=admin-secret-dashboard-2024
