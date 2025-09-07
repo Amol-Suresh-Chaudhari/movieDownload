@@ -53,7 +53,7 @@ a {
 
 /* Custom components */
 .movie-card {
-  @apply bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+  @apply bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-4 border-green-600;
 }
 
 .movie-card:hover .movie-poster {

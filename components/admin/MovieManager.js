@@ -272,34 +272,33 @@ export default function MovieManager() {
       </div>
 
       {/* Movies List */}
-      <div className="bg-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-gray-800 rounded-lg overflow-hidden border-2 border-green-600">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[1000px]">
             <thead className="bg-gray-700">
               <tr>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Movie</th>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Category</th>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Year</th>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Rating</th>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Status</th>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Views</th>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Downloads</th>
-                <th className="text-left py-4 px-6 text-gray-300 font-medium">Actions</th>
+                <th className="text-left py-4 px-4 text-gray-300 font-medium w-80">Movie</th>
+                <th className="text-left py-4 px-3 text-gray-300 font-medium w-32">Category</th>
+                <th className="text-left py-4 px-3 text-gray-300 font-medium w-20">Year</th>
+                <th className="text-left py-4 px-3 text-gray-300 font-medium w-24">Rating</th>
+                <th className="text-left py-4 px-3 text-gray-300 font-medium w-24">Views</th>
+                <th className="text-left py-4 px-3 text-gray-300 font-medium w-28">Downloads</th>
+                <th className="text-left py-4 px-4 text-gray-300 font-medium w-40">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredMovies.map((movie) => (
                 <tr key={movie._id || movie.id} className="border-b border-gray-700 hover:bg-gray-700">
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-4">
                     <div className="flex items-center space-x-3">
                       <img
                         src={movie.poster || '/images/default-poster.webp'}
                         alt={movie.title}
-                        className="w-12 h-18 object-cover rounded"
+                        className="w-12 h-18 object-cover rounded flex-shrink-0"
                         onError={(e) => { e.target.src = '/images/default-poster.webp' }}
                       />
-                      <div>
-                        <p className="text-white font-medium">{movie.title}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white font-medium truncate">{movie.title}</p>
                         <p className="text-gray-400 text-sm">{new Date(movie.createdAt).toLocaleDateString()}</p>
                         {movie.isAIGenerated && (
                           <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full mt-1">
@@ -309,8 +308,8 @@ export default function MovieManager() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-6">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                  <td className="py-4 px-3">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
                       movie.category === 'Hollywood' ? 'bg-blue-100 text-blue-800' :
                       movie.category === 'Bollywood' ? 'bg-red-100 text-red-800' :
                       movie.category === 'South' ? 'bg-green-100 text-green-800' :
@@ -319,45 +318,28 @@ export default function MovieManager() {
                       {movie.category}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-gray-300">{movie.year}</td>
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-3 text-gray-300">{movie.year}</td>
+                  <td className="py-4 px-3">
                     <div className="flex items-center space-x-1">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
                       <span className="text-white">{movie.rating || 0}</span>
                     </div>
                   </td>
-                  <td className="py-4 px-6">
-                    <select
-                      value={movie.isPublished ? 'published' : (movie.needsReview ? 'pending' : 'draft')}
-                      onChange={(e) => handleStatusChange(movie._id || movie.id, e.target.value)}
-                      className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${
-                        movie.isPublished 
-                          ? 'bg-green-100 text-green-800' 
-                          : movie.needsReview
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      <option value="published">Published</option>
-                      <option value="pending">Pending Review</option>
-                      <option value="draft">Draft</option>
-                    </select>
-                  </td>
-                  <td className="py-4 px-6 text-gray-300">{(movie.views || 0).toLocaleString()}</td>
-                  <td className="py-4 px-6 text-gray-300">{(movie.downloads || 0).toLocaleString()}</td>
-                  <td className="py-4 px-6">
-                    <div className="flex space-x-2">
+                  <td className="py-4 px-3 text-gray-300 text-sm">{(movie.views || 0).toLocaleString()}</td>
+                  <td className="py-4 px-3 text-gray-300 text-sm">{(movie.downloads || 0).toLocaleString()}</td>
+                  <td className="py-4 px-4">
+                    <div className="flex space-x-1 justify-start">
                       <button
                         title="View Movie"
                         onClick={() => handlePreview(movie)}
-                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-gray-600 rounded transition-colors duration-200"
+                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-gray-600 rounded transition-colors duration-200 flex-shrink-0"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         title="Edit Movie"
                         onClick={() => handleEdit(movie)}
-                        className="p-2 text-green-400 hover:text-green-300 hover:bg-gray-600 rounded transition-colors duration-200"
+                        className="p-2 text-green-400 hover:text-green-300 hover:bg-gray-600 rounded transition-colors duration-200 flex-shrink-0"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
@@ -365,7 +347,7 @@ export default function MovieManager() {
                         <button
                           title="Manage Episodes"
                           onClick={() => handleEpisodes(movie)}
-                          className="p-2 text-purple-400 hover:text-purple-300 hover:bg-gray-600 rounded transition-colors duration-200"
+                          className="p-2 text-purple-400 hover:text-purple-300 hover:bg-gray-600 rounded transition-colors duration-200 flex-shrink-0"
                         >
                           <PlayCircle className="w-4 h-4" />
                         </button>
@@ -373,7 +355,7 @@ export default function MovieManager() {
                       <button
                         title="Delete Movie"
                         onClick={() => handleDelete(movie._id || movie.id)}
-                        className="p-2 text-red-400 hover:text-red-300 hover:bg-gray-600 rounded transition-colors duration-200"
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-gray-600 rounded transition-colors duration-200 flex-shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

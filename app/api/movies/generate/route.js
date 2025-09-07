@@ -7,26 +7,26 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-// Sample movie titles for bulk generation
+// Realistic movie titles based on actual popular movies
 const sampleMovieTitles = {
   Hollywood: [
-    'The Last Guardian', 'Shadow Protocol', 'Quantum Horizon', 'Steel Thunder', 'Night Falcon',
-    'Code Red Alpha', 'Phoenix Rising', 'Dark Matter', 'Storm Breaker', 'Iron Legion',
-    'Cyber Strike', 'Titan Force', 'Ghost Protocol', 'Lightning Strike', 'Fire Storm'
+    'Avengers: Endgame', 'Spider-Man: No Way Home', 'The Batman', 'Top Gun: Maverick', 'Black Panther',
+    'Doctor Strange', 'Thor: Love and Thunder', 'Fast X', 'John Wick 4', 'Mission Impossible 7',
+    'Jurassic World Dominion', 'The Matrix Resurrections', 'Dune', 'No Time to Die', 'Venom 2'
   ],
   Bollywood: [
-    'Dil Ki Baat', 'Pyaar Ka Rang', 'Sapno Ka Raja', 'Mohabbat Zindabad', 'Ishq Wala Love',
-    'Dil Se Dil Tak', 'Zindagi Ke Rang', 'Khushi Ka Ghar', 'Pyaar Ki Jeet', 'Dil Ki Awaaz',
-    'Mohabbat Ki Kasam', 'Ishq Ka Jadoo', 'Dil Mein Hai Pyaar', 'Zindagi Ka Safar', 'Khwaabon Ka Raaja'
+    'Pathaan', 'Jawan', 'Dangal', 'Baahubali 2', 'KGF Chapter 2',
+    'RRR', 'Pushpa', '83', 'Sooryavanshi', 'War',
+    'Tiger Zinda Hai', 'Sanju', 'Padmaavat', 'Sultan', 'Bajrangi Bhaijaan'
   ],
   South: [
-    'Veer Simha', 'Rowdy Raja', 'Mass Maharaja', 'Tiger Zinda', 'Baahubali Returns',
-    'KGF Legacy', 'Pushpa Returns', 'RRR Revolution', 'Arjun Reddy 2', 'Kabir Singh Returns',
-    'Vikram Vedha', 'Master Plan', 'Beast Mode', 'Kaithi Returns', 'Lokesh Universe'
+    'KGF Chapter 2', 'RRR', 'Pushpa', 'Baahubali 2', 'Master',
+    'Beast', 'Vikram', 'Kaithi', 'Bigil', 'Sarkar',
+    'Arjun Reddy', 'Geetha Govindam', 'Ala Vaikunthapurramuloo', 'Sarileru Neekevvaru', 'F2'
   ],
   'Web Series': [
-    'Digital Crimes', 'Cyber City', 'The Investigation', 'Dark Web', 'Code Breakers',
-    'Mumbai Underworld', 'Tech Titans', 'Crime Patrol', 'Digital Detective', 'Hacker Wars'
+    'Sacred Games', 'Mirzapur', 'The Family Man', 'Scam 1992', 'Mumbai Diaries 26/11',
+    'Arya', 'Special Ops', 'Rocket Boys', 'SonyLIV Originals', 'Delhi Crime'
   ]
 }
 
@@ -134,12 +134,39 @@ const generateMovieData = (title, category, year, sourcePlatform) => {
 
   const movieImages = generateMovieImages(title, category)
   
+  // Generate detailed description based on category and genre
+  const generateDetailedDescription = (title, category, genres) => {
+    const plotTemplates = {
+      Hollywood: [
+        `${title} is a spectacular ${genres[0].toLowerCase()} blockbuster that takes audiences on an unforgettable journey. With cutting-edge visual effects and heart-pounding action sequences, this film delivers non-stop entertainment. The story follows compelling characters as they face extraordinary challenges, featuring stellar performances from A-list actors and masterful direction that brings every scene to life.`,
+        `In this thrilling ${category.toLowerCase()} production, ${title} combines intense drama with breathtaking cinematography. The film explores themes of heroism, sacrifice, and redemption while delivering edge-of-your-seat excitement. With its innovative storytelling and spectacular production values, this movie sets new standards for modern cinema.`
+      ],
+      Bollywood: [
+        `${title} is a captivating Bollywood masterpiece that beautifully weaves together romance, drama, and spectacular musical sequences. This emotionally rich film showcases the finest of Indian cinema with its colorful storytelling, memorable songs, and powerful performances. The narrative explores family values, love, and tradition while delivering entertainment that resonates with audiences across generations.`,
+        `A heartwarming tale of love and relationships, ${title} brings together stellar performances, soul-stirring music, and vibrant cinematography. This Bollywood gem celebrates the essence of Indian culture while telling a universal story of human emotions, dreams, and aspirations.`
+      ],
+      South: [
+        `${title} is an action-packed South Indian blockbuster that combines high-octane sequences with compelling storytelling. Known for its larger-than-life characters and spectacular action choreography, this film delivers the perfect blend of entertainment and emotion. The movie features stunning visuals, powerful dialogues, and performances that have redefined regional cinema.`,
+        `This South Indian masterpiece, ${title}, showcases the rich cultural heritage and cinematic excellence of regional filmmaking. With its unique narrative style, breathtaking action sequences, and memorable characters, the film has garnered critical acclaim and massive popular appeal.`
+      ],
+      'Web Series': [
+        `${title} is a gripping web series that explores complex characters and intricate storylines across multiple episodes. This digital masterpiece combines stellar writing with exceptional performances, creating a binge-worthy experience that keeps viewers on the edge of their seats. The series delves deep into contemporary issues while maintaining high production values and engaging narratives.`,
+        `An innovative web series, ${title} represents the new age of digital entertainment with its bold storytelling and character-driven plots. Each episode builds upon the last, creating a compelling narrative arc that showcases the best of streaming content.`
+      ]
+    }
+    
+    const templates = plotTemplates[category] || plotTemplates.Hollywood
+    return templates[Math.floor(Math.random() * templates.length)]
+  }
+
+  const selectedGenres = getRandomGenres(category)
+  
   return {
     title,
     slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-    description: `${title} is an exciting ${category.toLowerCase()} movie from ${year}. This thrilling story captivates audiences with its compelling narrative and outstanding performances.`,
+    description: generateDetailedDescription(title, category, selectedGenres),
     year: parseInt(year),
-    genre: getRandomGenres(category),
+    genre: selectedGenres,
     category,
     language: getLanguages(category),
     isDualAudio: category === 'Hollywood' || category === 'South',
@@ -157,7 +184,7 @@ const generateMovieData = (title, category, year, sourcePlatform) => {
     tags: [
       title.split(' ')[0],
       category,
-      ...randomGenres.slice(0, 2),
+      ...selectedGenres.slice(0, 2),
       '480p', '720p', '1080p',
       category !== 'Bollywood' ? 'Dual Audio' : 'Hindi',
       'HD Quality'
@@ -199,14 +226,35 @@ export async function POST(request) {
       const categoryTitles = sampleMovieTitles[category] || sampleMovieTitles.Hollywood
       const movies = []
 
+      // Check for existing movies to avoid duplicates
+      const existingMovies = await Movie.find({ 
+        title: { $in: categoryTitles },
+        category: category 
+      }).select('title')
+      
+      const existingTitles = new Set(existingMovies.map(movie => movie.title))
+
       for (let i = 0; i < count; i++) {
-        const movieTitle = categoryTitles[i % categoryTitles.length] + ` ${Math.floor(Math.random() * 1000)}`
+        let movieTitle = categoryTitles[i % categoryTitles.length]
+        
+        // If movie already exists, skip or modify title
+        if (existingTitles.has(movieTitle)) {
+          movieTitle = `${movieTitle} (${year})`
+          // Double check this modified title doesn't exist
+          const modifiedExists = await Movie.findOne({ title: movieTitle, category: category })
+          if (modifiedExists) {
+            console.log(`Skipping duplicate movie: ${movieTitle}`)
+            continue
+          }
+        }
+        
         const movieData = generateMovieData(movieTitle, category, year, sourcePlatform)
         
         try {
           const movie = new Movie(movieData)
           const savedMovie = await movie.save()
           movies.push(savedMovie)
+          existingTitles.add(movieTitle) // Add to set to avoid duplicates in this batch
         } catch (error) {
           console.error(`Error saving movie ${movieTitle}:`, error)
         }
@@ -224,6 +272,19 @@ export async function POST(request) {
     }
 
     await dbConnect()
+
+    // Check if movie already exists
+    const existingMovie = await Movie.findOne({ 
+      title: title, 
+      category: category 
+    })
+    
+    if (existingMovie) {
+      return NextResponse.json({ 
+        message: 'Movie with this title already exists in this category',
+        error: 'Duplicate movie title'
+      }, { status: 400 })
+    }
 
     const movieData = generateMovieData(title, category, year, sourcePlatform)
     

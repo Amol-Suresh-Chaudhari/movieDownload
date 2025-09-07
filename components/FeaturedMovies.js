@@ -138,11 +138,11 @@ export default function FeaturedMovies() {
   useEffect(() => {
     const updateItemsPerPage = () => {
       if (window.innerWidth < 640) {
-        setItemsPerPage(2)
+        setItemsPerPage(1) // Show 1 item on mobile
       } else if (window.innerWidth < 1024) {
-        setItemsPerPage(2)
+        setItemsPerPage(2) // Show 2 items on tablet
       } else {
-        setItemsPerPage(4)
+        setItemsPerPage(4) // Show 4 items on desktop
       }
     }
     
@@ -163,12 +163,12 @@ export default function FeaturedMovies() {
 
   if (loading) {
     return (
-      <section className="py-12 px-4 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-white mb-8">Featured Movies</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="py-8 sm:py-12 px-4 max-w-7xl mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">Featured Movies</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-gray-800 rounded-lg animate-pulse">
-              <div className="h-64 sm:h-80 bg-gray-700 rounded-t-lg"></div>
+            <div key={i} className="bg-gray-800 rounded-lg animate-pulse border-4 border-green-600">
+              <div className="h-64 sm:h-72 lg:h-80 bg-gray-700 rounded-t-lg"></div>
               <div className="p-4">
                 <div className="h-4 bg-gray-700 rounded mb-2"></div>
                 <div className="h-3 bg-gray-700 rounded w-2/3"></div>
@@ -181,23 +181,23 @@ export default function FeaturedMovies() {
   }
 
   return (
-    <section className="py-12 px-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold text-white">Featured Movies</h2>
+    <section className="py-8 sm:py-12 px-4 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white">Featured Movies</h2>
         <div className="flex space-x-2">
           <button
             onClick={prevSlide}
             disabled={currentIndex === 0}
             className="p-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full transition-colors duration-200"
           >
-            <ChevronLeft className="w-5 h-5 text-white" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </button>
           <button
             onClick={nextSlide}
             disabled={currentIndex >= maxIndex}
             className="p-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full transition-colors duration-200"
           >
-            <ChevronRight className="w-5 h-5 text-white" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </button>
         </div>
       </div>
@@ -208,7 +208,11 @@ export default function FeaturedMovies() {
           style={{ transform: `translateX(-${currentIndex * (100 / itemsPerPage)}%)` }}
         >
           {movies.map((movie) => (
-            <div key={movie._id} className="w-full sm:w-1/2 lg:w-1/4 flex-shrink-0 px-3">
+            <div key={movie._id} className={`flex-shrink-0 px-2 sm:px-3 ${
+              itemsPerPage === 1 ? 'w-full' : 
+              itemsPerPage === 2 ? 'w-1/2' : 
+              'w-1/4'
+            }`}>
               <MovieCard movie={movie} />
             </div>
           ))}
