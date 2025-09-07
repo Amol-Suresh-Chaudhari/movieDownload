@@ -21,9 +21,7 @@ export default function EditMovieForm({ movie, onClose, onMovieUpdated }) {
   
   const [images, setImages] = useState([])
   const [downloadLinks, setDownloadLinks] = useState([
-    { quality: '480p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] },
-    { quality: '720p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] },
-    { quality: '1080p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] }
+    { quality: '480p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] }
   ])
   const [streamingLinks, setStreamingLinks] = useState([])
   const [loading, setLoading] = useState(false)
@@ -48,12 +46,22 @@ export default function EditMovieForm({ movie, onClose, onMovieUpdated }) {
         isPublished: movie.isPublished || true
       })
       setImages(movie.images || [])
-      setDownloadLinks(movie.downloadLinks || [
-        { quality: '480p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] },
-        { quality: '720p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] },
-        { quality: '1080p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] }
-      ])
+      
+      // Use existing downloadLinks or default to 480p only
+      if (movie.downloadLinks && movie.downloadLinks.length > 0) {
+        setDownloadLinks(movie.downloadLinks)
+      } else {
+        setDownloadLinks([
+          { quality: '480p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] }
+        ])
+      }
+      
       setStreamingLinks(movie.streamingLinks || [])
+    } else {
+      // Initialize with only 480p when no movie is provided
+      setDownloadLinks([
+        { quality: '480p', size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] }
+      ])
     }
   }, [movie])
 
@@ -121,7 +129,21 @@ export default function EditMovieForm({ movie, onClose, onMovieUpdated }) {
   }
 
   const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index))
+    setImages(prev => prev.filter((_, idx) => idx !== index))
+  }
+
+  const deleteAllDownloadLinks = (qualityIndex) => {
+    setDownloadLinks(prev => prev.map((quality, idx) => 
+      idx === qualityIndex 
+        ? { ...quality, links: [{ url: '', server: 'Server 1', type: 'direct' }] }
+        : quality
+    ))
+  }
+
+  const deleteAllScreenshots = (qualityToDelete) => {
+    setImages(prev => prev.filter(img => 
+      !(img.type === 'screenshot' && img.quality === qualityToDelete)
+    ))
   }
 
   const handleSubmit = async (e) => {
@@ -129,13 +151,29 @@ export default function EditMovieForm({ movie, onClose, onMovieUpdated }) {
     setLoading(true)
 
     try {
+      // Filter out empty images and ensure screenshots have quality
+      const validImages = images.filter(img => img.url && img.url.trim() !== '').map(img => ({
+        ...img,
+        // Ensure screenshot images have quality assigned
+        quality: img.type === 'screenshot' && !img.quality ? '480p' : img.quality
+      }))
+      
+      console.log('Valid images being submitted:', validImages)
+      console.log('Screenshots with quality:', validImages.filter(img => img.type === 'screenshot'))
+      
+      // Ensure downloadLinks have proper quality format
+      const validDownloadLinks = downloadLinks.map(dl => ({
+        ...dl,
+        quality: dl.quality.includes('p') || dl.quality === '4K' ? dl.quality : `${dl.quality}p`,
+        links: dl.links.filter(link => link.url && link.url.trim() !== '')
+      })).filter(dl => dl.links.length > 0)
+
+
       const movieData = {
         ...formData,
-        images,
-        downloadLinks: downloadLinks.filter(quality => 
-          quality.links.some(link => link.url.trim())
-        ),
-        streamingLinks: streamingLinks.filter(link => link.url.trim())
+        images: validImages,
+        downloadLinks: validDownloadLinks,
+        streamingLinks: streamingLinks.filter(sl => sl.url && sl.url.trim() !== '')
       }
 
       const response = await fetch(`/api/movies/${movie._id}`, {
@@ -297,13 +335,13 @@ export default function EditMovieForm({ movie, onClose, onMovieUpdated }) {
             </div>
           </div>
 
-          {/* Images Section */}
+          {/* Other Images Section (Poster, Backdrop, Banner) */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <label className="block text-sm font-medium text-gray-300">Movie Images</label>
+              <label className="block text-sm font-medium text-gray-300">Other Images (Poster, Backdrop, Banner)</label>
               <button
                 type="button"
-                onClick={addImage}
+                onClick={() => setImages(prev => [...prev, { url: '', type: 'poster', alt: '' }])}
                 className="flex items-center space-x-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
               >
                 <Plus className="w-4 h-4" />
@@ -311,104 +349,238 @@ export default function EditMovieForm({ movie, onClose, onMovieUpdated }) {
               </button>
             </div>
             
-            {images.map((image, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 p-3 bg-gray-700 rounded">
-                <input
-                  type="url"
-                  placeholder="Image URL"
-                  value={image.url}
-                  onChange={(e) => updateImage(index, 'url', e.target.value)}
-                  className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
-                />
-                <select
-                  value={image.type}
-                  onChange={(e) => updateImage(index, 'type', e.target.value)}
-                  className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
-                >
-                  <option value="poster">Poster</option>
-                  <option value="backdrop">Backdrop</option>
-                  <option value="screenshot">Screenshot</option>
-                  <option value="banner">Banner</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Alt text"
-                  value={image.alt}
-                  onChange={(e) => updateImage(index, 'alt', e.target.value)}
-                  className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+            {images.filter(img => img.type !== 'screenshot').map((image, index) => {
+              const actualIndex = images.findIndex(img => img === image)
+              return (
+                <div key={actualIndex} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 p-3 bg-gray-700 rounded">
+                  <input
+                    type="url"
+                    placeholder="Image URL"
+                    value={image.url}
+                    onChange={(e) => updateImage(actualIndex, 'url', e.target.value)}
+                    className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
+                  />
+                  <select
+                    value={image.type}
+                    onChange={(e) => updateImage(actualIndex, 'type', e.target.value)}
+                    className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
+                  >
+                    <option value="poster">Poster</option>
+                    <option value="backdrop">Backdrop</option>
+                    <option value="banner">Banner</option>
+                  </select>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={image.isAIGenerated || false}
+                      onChange={(e) => updateImage(actualIndex, 'isAIGenerated', e.target.checked)}
+                      className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-xs text-gray-300">AI Generated</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Alt text"
+                    value={image.alt}
+                    onChange={(e) => updateImage(actualIndex, 'alt', e.target.value)}
+                    className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(actualIndex)}
+                    className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )
+            })}
           </div>
 
           {/* Download Links */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-4">Download Links</label>
+            <div className="flex items-center justify-between mb-4">
+              <label className="block text-sm font-medium text-gray-300">Download Links & Screenshots</label>
+              <select
+                onChange={(e) => {
+                  if (e.target.value && !downloadLinks.some(dl => dl.quality === e.target.value)) {
+                    setDownloadLinks(prev => [...prev, { quality: e.target.value, size: '', links: [{ url: '', server: 'Server 1', type: 'direct' }] }])
+                  }
+                  e.target.value = ''
+                }}
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
+              >
+                <option value="">Add Quality</option>
+                {!downloadLinks.some(dl => dl.quality === '480p') && <option value="480p">480p</option>}
+                {!downloadLinks.some(dl => dl.quality === '720p') && <option value="720p">720p</option>}
+                {!downloadLinks.some(dl => dl.quality === '1080p') && <option value="1080p">1080p</option>}
+                {!downloadLinks.some(dl => dl.quality === '4K') && <option value="4K">4K</option>}
+              </select>
+            </div>
             {downloadLinks.map((quality, qualityIndex) => (
               <div key={quality.quality} className="mb-6 p-4 bg-gray-700 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-lg font-medium text-white">{quality.quality}</h4>
                   <input
                     type="text"
-                    placeholder="File size (e.g., 1.2GB)"
-                    value={quality.size}
-                    onChange={(e) => updateDownloadLink(qualityIndex, 0, 'size', e.target.value)}
-                    className="px-3 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm w-32"
+                    value={quality.quality}
+                    onChange={(e) => {
+                      setDownloadLinks(prev => prev.map((q, idx) => 
+                        idx === qualityIndex ? { ...q, quality: e.target.value } : q
+                      ))
+                    }}
+                    className="text-lg font-medium text-white bg-gray-600 border border-gray-500 rounded px-2 py-1"
+                    placeholder="Quality (e.g., 480p, 720p, 1080p, 4K)"
                   />
-                </div>
-                
-                {quality.links.map((link, linkIndex) => (
-                  <div key={linkIndex} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-                    <input
-                      type="url"
-                      placeholder="Download URL"
-                      value={link.url}
-                      onChange={(e) => updateDownloadLink(qualityIndex, linkIndex, 'url', e.target.value)}
-                      className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
-                    />
+                  <div className="flex items-center space-x-2">
                     <input
                       type="text"
-                      placeholder="Server name"
-                      value={link.server}
-                      onChange={(e) => updateDownloadLink(qualityIndex, linkIndex, 'server', e.target.value)}
-                      className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
+                      placeholder="File size (e.g., 1.2GB)"
+                      value={quality.size}
+                      onChange={(e) => updateDownloadLink(qualityIndex, 0, 'size', e.target.value)}
+                      className="px-3 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm w-32"
                     />
-                    <select
-                      value={link.type}
-                      onChange={(e) => updateDownloadLink(qualityIndex, linkIndex, 'type', e.target.value)}
-                      className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
+                    <button
+                      type="button"
+                      onClick={() => deleteAllDownloadLinks(qualityIndex)}
+                      className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs"
+                      title="Delete all download links for this quality"
                     >
-                      <option value="direct">Direct</option>
-                      <option value="torrent">Torrent</option>
-                      <option value="streaming">Streaming</option>
-                    </select>
-                    <div className="flex space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => addDownloadLink(qualityIndex)}
-                        className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
+                      Clear Links
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteAllScreenshots(quality.quality)}
+                      className="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs"
+                      title="Delete all screenshots for this quality"
+                    >
+                      Clear Screenshots
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDownloadLinks(prev => prev.filter((_, idx) => idx !== qualityIndex))}
+                      className="px-2 py-1 bg-red-700 hover:bg-red-800 text-white rounded text-xs"
+                      title="Delete this quality section"
+                    >
+                      Delete Quality
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Download Links for this quality */}
+                <div className="mb-4">
+                  <h5 className="text-sm font-medium text-gray-300 mb-2">Download Links</h5>
+                  {quality.links.map((link, linkIndex) => (
+                    <div key={linkIndex} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                      <input
+                        type="url"
+                        placeholder="Download URL"
+                        value={link.url}
+                        onChange={(e) => updateDownloadLink(qualityIndex, linkIndex, 'url', e.target.value)}
+                        className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Server name"
+                        value={link.server}
+                        onChange={(e) => updateDownloadLink(qualityIndex, linkIndex, 'server', e.target.value)}
+                        className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
+                      />
+                      <select
+                        value={link.type}
+                        onChange={(e) => updateDownloadLink(qualityIndex, linkIndex, 'type', e.target.value)}
+                        className="px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm"
                       >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                      {quality.links.length > 1 && (
+                        <option value="direct">Direct</option>
+                        <option value="torrent">Torrent</option>
+                        <option value="streaming">Streaming</option>
+                      </select>
+                      <div className="flex space-x-2">
                         <button
                           type="button"
-                          onClick={() => removeDownloadLink(qualityIndex, linkIndex)}
+                          onClick={() => addDownloadLink(qualityIndex)}
+                          className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                        {quality.links.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeDownloadLink(qualityIndex, linkIndex)}
+                            className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Screenshots for this quality */}
+                <div>
+                  <h5 className="text-sm font-medium text-gray-300 mb-2">Screenshots for {quality.quality}</h5>
+                  {images.filter(img => img.type === 'screenshot' && (img.quality === quality.quality || !img.quality)).map((image, imgIndex) => {
+                    const actualIndex = images.findIndex(img => img === image)
+                    return (
+                      <div key={actualIndex} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 p-3 bg-gray-600 rounded">
+                        <input
+                          type="url"
+                          placeholder="Screenshot URL"
+                          value={image.url}
+                          onChange={(e) => updateImage(actualIndex, 'url', e.target.value)}
+                          className="px-3 py-2 bg-gray-500 border border-gray-400 rounded text-white text-sm"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Alt text"
+                          value={image.alt}
+                          onChange={(e) => updateImage(actualIndex, 'alt', e.target.value)}
+                          className="px-3 py-2 bg-gray-500 border border-gray-400 rounded text-white text-sm"
+                        />
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-300 mb-2">Screenshot Quality</label>
+                          <select
+                            value={image.quality || ''}
+                            onChange={(e) => updateImage(actualIndex, 'quality', e.target.value)}
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Quality</option>
+                            <option value="480p">480p</option>
+                            <option value="720p">720p</option>
+                            <option value="1080p">1080p</option>
+                            <option value="4K">4K</option>
+                          </select>
+                        </div>
+                        <div className="mb-4">
+                          <label className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={image.isAIGenerated || false}
+                              onChange={(e) => updateImage(actualIndex, 'isAIGenerated', e.target.checked)}
+                              className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-300">AI Generated Image</span>
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeImage(actualIndex)}
                           className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                      </div>
+                    )
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => setImages(prev => [...prev, { url: '', type: 'screenshot', quality: quality.quality, alt: `${quality.quality} screenshot` }])}
+                    className="flex items-center space-x-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Screenshot for {quality.quality}</span>
+                  </button>
+                </div>
               </div>
             ))}
           </div>

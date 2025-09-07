@@ -41,8 +41,16 @@ const imageSchema = new mongoose.Schema({
     enum: ['poster', 'backdrop', 'screenshot', 'banner'],
     default: 'poster'
   },
+  quality: {
+    type: String,
+    enum: ['480p', '720p', '1080p', '4K']
+  },
   cloudinaryId: String,
-  alt: String
+  alt: String,
+  isAIGenerated: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const episodeSchema = new mongoose.Schema({
@@ -272,7 +280,10 @@ const dummyMovies = [
     downloads: 45000,
     images: [
       { url: "https://image.tmdb.org/t/p/w500/qBED3iFuD1bOOsyOZiXCj8R8Yf5.jpg", type: "poster", alt: "Pathaan Poster" },
-      { url: "https://image.tmdb.org/t/p/original/s16H6tpK2utvwDtzZ8Qy4qm5Emw.jpg", type: "backdrop", alt: "Pathaan Backdrop" }
+      { url: "https://image.tmdb.org/t/p/original/s16H6tpK2utvwDtzZ8Qy4qm5Emw.jpg", type: "backdrop", alt: "Pathaan Backdrop" },
+      { url: "https://picsum.photos/800/450?random=1", type: "screenshot", quality: "480p", alt: "Pathaan Screenshot 1" },
+      { url: "https://picsum.photos/800/450?random=2", type: "screenshot", quality: "720p", alt: "Pathaan Screenshot 2" },
+      { url: "https://picsum.photos/800/450?random=3", type: "screenshot", quality: "1080p", alt: "Pathaan Screenshot 3" }
     ]
   },
   
@@ -325,7 +336,10 @@ const dummyMovies = [
     views: 200000,
     downloads: 78000,
     images: [
-      { url: "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg", type: "poster", alt: "Avatar 2 Poster" }
+      { url: "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg", type: "poster", alt: "Avatar 2 Poster" },
+      { url: "https://picsum.photos/800/450?random=4", type: "screenshot", quality: "720p", alt: "Avatar 2 Screenshot 1" },
+      { url: "https://picsum.photos/800/450?random=5", type: "screenshot", quality: "1080p", alt: "Avatar 2 Screenshot 2" },
+      { url: "https://picsum.photos/800/450?random=6", type: "screenshot", quality: "4K", alt: "Avatar 2 Screenshot 3" }
     ]
   },
 
@@ -375,7 +389,10 @@ const dummyMovies = [
     views: 180000,
     downloads: 65000,
     images: [
-      { url: "https://image.tmdb.org/t/p/w500/f0eZNkdAz2ofdPjWI1m8OKTZJvU.jpg", type: "poster", alt: "RRR Poster" }
+      { url: "https://image.tmdb.org/t/p/w500/f0eZNkdAz2ofdPjWI1m8OKTZJvU.jpg", type: "poster", alt: "RRR Poster" },
+      { url: "https://picsum.photos/800/450?random=7", type: "screenshot", quality: "480p", alt: "RRR Screenshot 1" },
+      { url: "https://picsum.photos/800/450?random=8", type: "screenshot", quality: "720p", alt: "RRR Screenshot 2" },
+      { url: "https://picsum.photos/800/450?random=9", type: "screenshot", quality: "1080p", alt: "RRR Screenshot 3" }
     ]
   },
 
@@ -617,7 +634,10 @@ const dummyMovies = [
     views: 220000,
     downloads: 85000,
     images: [
-      { url: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", type: "poster", alt: "Spider-Man No Way Home Poster" }
+      { url: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", type: "poster", alt: "Spider-Man No Way Home Poster" },
+      { url: "https://picsum.photos/800/450?random=10", type: "screenshot", quality: "480p", alt: "Spider-Man Screenshot 1" },
+      { url: "https://picsum.photos/800/450?random=11", type: "screenshot", quality: "720p", alt: "Spider-Man Screenshot 2" },
+      { url: "https://picsum.photos/800/450?random=12", type: "screenshot", quality: "1080p", alt: "Spider-Man Screenshot 3" }
     ]
   },
 
@@ -666,7 +686,10 @@ const dummyMovies = [
     views: 175000,
     downloads: 62000,
     images: [
-      { url: "https://image.tmdb.org/t/p/w500/pU4baeqHZTmNgUy3QkqUBUcuKaJ.jpg", type: "poster", alt: "Pushpa Poster" }
+      { url: "https://image.tmdb.org/t/p/w500/pU4baeqHZTmNgUy3QkqUBUcuKaJ.jpg", type: "poster", alt: "Pushpa Poster" },
+      { url: "https://picsum.photos/800/450?random=13", type: "screenshot", quality: "480p", alt: "Pushpa Screenshot 1" },
+      { url: "https://picsum.photos/800/450?random=14", type: "screenshot", quality: "720p", alt: "Pushpa Screenshot 2" },
+      { url: "https://picsum.photos/800/450?random=15", type: "screenshot", quality: "1080p", alt: "Pushpa Screenshot 3" }
     ]
   }
 ];

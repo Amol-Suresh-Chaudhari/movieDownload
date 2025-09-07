@@ -28,8 +28,16 @@ const imageSchema = new mongoose.Schema({
     enum: ['poster', 'backdrop', 'screenshot', 'banner'],
     default: 'poster'
   },
+  quality: {
+    type: String,
+    enum: ['480p', '720p', '1080p', '4K']
+  },
   cloudinaryId: String,
-  alt: String
+  alt: String,
+  isAIGenerated: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const episodeSchema = new mongoose.Schema({

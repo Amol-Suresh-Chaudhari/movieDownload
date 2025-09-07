@@ -6,6 +6,7 @@ import { getImageWithFallback } from '../lib/constants'
 export default function MovieCard({ movie }) {
   const {
     _id,
+    id,
     title,
     slug,
     poster,
@@ -46,13 +47,13 @@ export default function MovieCard({ movie }) {
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-3">
             <Link
-              href={`/movie/${slug}`}
+              href={`/movie/${slug || _id || id}`}
               className="p-3 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors duration-200"
             >
               <Play className="w-5 h-5 text-white" />
             </Link>
             <Link
-              href={`/movie/${slug}#download`}
+              href={`/movie/${slug || _id || id}#download`}
               className="p-3 bg-green-600 hover:bg-green-700 rounded-full transition-colors duration-200"
             >
               <Download className="w-5 h-5 text-white" />
@@ -85,7 +86,7 @@ export default function MovieCard({ movie }) {
       </div>
 
       <div className="p-4">
-        <Link href={`/movie/${slug}`}>
+        <Link href={`/movie/${slug || _id || id}`}>
           <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 hover:text-blue-400 transition-colors duration-200">
             {title}
           </h3>

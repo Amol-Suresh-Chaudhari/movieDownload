@@ -61,7 +61,7 @@ export default function MovieCardWithRedux({ movie }) {
 
   return (
     <Link 
-      href={`/movie/${movie.slug}`} 
+      href={`/movie/${movie.slug || movie._id || movie.id}`} 
       className="group block"
       onClick={handleCardClick}
     >

@@ -140,14 +140,14 @@ export default function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
-                href={`/movie/${currentMovie._id || currentMovie.id}`}
+                href={`/movie/${currentMovie.slug || currentMovie._id || currentMovie.id}`}
                 className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 text-sm sm:text-base"
               >
                 <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Watch Now
               </Link>
               <Link
-                href={`/movie/${currentMovie._id || currentMovie.id}#download`}
+                href={`/movie/${currentMovie.slug || currentMovie._id || currentMovie.id}#download`}
                 className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900 font-semibold rounded-lg transition-colors duration-200 text-sm sm:text-base"
               >
                 <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />

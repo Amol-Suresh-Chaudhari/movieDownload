@@ -152,16 +152,6 @@ export default function MovieDetails({ movie }) {
                   >
                     Watch Online
                   </button>
-                  <button
-                    onClick={() => setActiveTab('screenshots')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'screenshots'
-                        ? 'border-blue-500 text-blue-400'
-                        : 'border-transparent text-gray-400 hover:text-gray-300'
-                    }`}
-                  >
-                    Screenshots
-                  </button>
                 </nav>
               </div>
 
@@ -201,7 +191,7 @@ export default function MovieDetails({ movie }) {
                               </div>
                               
                               {/* Episode Download Links */}
-                              {(episode.downloadLinks || []).length > 0 && (
+                              {(episode.downloadLinks || []).length > 0 ? (
                                 <div className="space-y-2">
                                   {(episode.downloadLinks || []).map((quality, qualityIndex) => (
                                     <div key={qualityIndex} className="bg-gray-700 rounded p-3">
@@ -228,6 +218,11 @@ export default function MovieDetails({ movie }) {
                                     </div>
                                   ))}
                                 </div>
+                              ) : (
+                                <div className="bg-gray-700 rounded p-3 text-center">
+                                  <p className="text-yellow-400 font-medium">Coming Soon</p>
+                                  <p className="text-gray-400 text-sm">Download links will be available soon</p>
+                                </div>
                               )}
                             </div>
                           ))}
@@ -236,74 +231,118 @@ export default function MovieDetails({ movie }) {
                     ) : (
                       /* Regular Movie Downloads */
                       <div className="space-y-6">
-                        {/* Quality Selector */}
-                        <div>
-                          <h3 className="text-xl font-semibold text-white mb-4">Select Quality</h3>
-                          <div className="flex flex-wrap gap-3">
-                            {(movie.downloadLinks || []).map((link) => (
-                              <button
-                                key={link.quality}
-                                onClick={() => setSelectedQuality(link.quality)}
-                                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                                  selectedQuality === link.quality
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                              >
-                                {link.quality} ({link.size})
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+                        {(movie.downloadLinks || []).length > 0 && (movie.downloadLinks || []).some(link => 
+                          link.links && link.links.some(l => l.url && l.url.trim())
+                        ) ? (
+                          <>
+                            {/* Quality Selector */}
+                            <div>
+                              <h3 className="text-xl font-semibold text-white mb-4">Select Quality</h3>
+                              <div className="flex flex-wrap gap-3">
+                                {(movie.downloadLinks || []).filter(link => 
+                                  link.links && link.links.some(l => l.url && l.url.trim())
+                                ).map((link) => (
+                                  <button
+                                    key={link.quality}
+                                    onClick={() => setSelectedQuality(link.quality)}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                                      selectedQuality === link.quality
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                    }`}
+                                  >
+                                    {link.quality} ({link.size})
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
 
-                        {/* Download Links */}
-                        {selectedLink && (
-                          <div className="bg-gray-800 rounded-lg p-6">
-                            <div className="flex items-center justify-between mb-4">
-                              <div>
-                                <h4 className="text-lg font-semibold text-white">
-                                  {movie.title} ({selectedLink.quality})
-                                </h4>
-                                <p className="text-gray-400">Size: {selectedLink.size}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-sm text-gray-400">Downloads</p>
-                                <p className="text-lg font-semibold text-white">
-                                  {movie.downloads.toLocaleString()}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            {/* Multiple Download Links for Selected Quality */}
-                            <div className="space-y-3">
-                              {selectedLink.links ? (
-                                selectedLink.links.map((link, index) => (
-                                  <div key={index} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                                    <div className="flex items-center space-x-3">
-                                      <Download className="w-5 h-5 text-green-400" />
-                                      <div>
-                                        <p className="text-white font-medium">{link.server}</p>
-                                        <p className="text-gray-400 text-sm capitalize">{link.type} download</p>
-                                      </div>
-                                    </div>
-                                    <button
-                                      onClick={() => handleDownload({ ...selectedLink, url: link.url, server: link.server })}
-                                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
-                                    >
-                                      Download
-                                    </button>
+                            {/* Download Links */}
+                            {selectedLink && selectedLink.links && selectedLink.links.some(l => l.url && l.url.trim()) && (
+                              <div className="bg-gray-800 rounded-lg p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                  <div>
+                                    <h4 className="text-lg font-semibold text-white">
+                                      {movie.title} ({selectedLink.quality})
+                                    </h4>
+                                    <p className="text-gray-400">Size: {selectedLink.size}</p>
                                   </div>
-                                ))
-                              ) : (
-                                <button
-                                  onClick={() => handleDownload(selectedLink)}
-                                  className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200"
-                                >
-                                  <Download className="w-5 h-5" />
-                                  <span>Download Now</span>
-                                </button>
-                              )}
-                            </div>
+                                  <div className="text-right">
+                                    <p className="text-sm text-gray-400">Downloads</p>
+                                    <p className="text-lg font-semibold text-white">
+                                      {movie.downloads?.toLocaleString() || '0'}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                {/* Multiple Download Links for Selected Quality */}
+                                <div className="space-y-3">
+                                  {selectedLink.links.filter(link => link.url && link.url.trim()).map((link, index) => (
+                                    <div key={index} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                                      <div className="flex items-center space-x-3">
+                                        <Download className="w-5 h-5 text-green-400" />
+                                        <div>
+                                          <p className="text-white font-medium">{link.server}</p>
+                                          <p className="text-gray-400 text-sm capitalize">{link.type} download</p>
+                                        </div>
+                                      </div>
+                                      <a
+                                        href={link.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => handleDownload({ ...selectedLink, url: link.url, server: link.server })}
+                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 inline-block text-center"
+                                      >
+                                        Download
+                                      </a>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Screenshots for Selected Quality */}
+                            {selectedLink && (
+                              <div className="bg-gray-800 rounded-lg p-6 mt-6">
+                                <h4 className="text-lg font-semibold text-white mb-4">
+                                  Screenshots ({selectedLink.quality})
+                                </h4>
+                                
+                                
+                                {movie.images?.filter(img => img.type === 'screenshot' && img.quality === selectedLink.quality).length > 0 ? (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {movie.images
+                                      .filter(img => img.type === 'screenshot' && img.quality === selectedLink.quality)
+                                      .map((screenshotImg, index) => (
+                                        <div key={index} className="bg-gray-700 rounded-lg p-3">
+                                          <div className="mb-2">
+                                            <span className="text-xs text-green-400">Quality: {screenshotImg.quality}</span>
+                                          </div>
+                                          <img
+                                            src={screenshotImg.url}
+                                            alt={screenshotImg.alt || `${movie.title} ${selectedLink.quality} screenshot ${index + 1}`}
+                                            className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                            onError={(e) => {
+                                              e.target.src = '/images/default-poster.webp'
+                                            }}
+                                            onClick={() => window.open(screenshotImg.url, '_blank')}
+                                          />
+                                        </div>
+                                      ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-4">
+                                    <p className="text-gray-400 text-sm">No screenshots available for {selectedLink.quality} quality.</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="bg-gray-800 rounded-lg p-8 text-center">
+                            <Download className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-yellow-400 mb-2">Coming Soon</h3>
+                            <p className="text-gray-400">Download links will be available soon. Please check back later.</p>
                           </div>
                         )}
                       </div>
@@ -314,56 +353,37 @@ export default function MovieDetails({ movie }) {
               {activeTab === 'streaming' && (
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold text-white mb-4">Watch Online</h3>
-                    {(movie.streamingLinks || []).length > 0 ? (
+                    {(movie.streamingLinks || []).length > 0 && (movie.streamingLinks || []).some(link => link.url && link.url.trim()) ? (
                       <div className="grid gap-4">
-                        {(movie.streamingLinks || []).map((link, index) => (
+                        {(movie.streamingLinks || []).filter(link => link.url && link.url.trim()).map((link, index) => (
                           <div key={index} className="bg-gray-800 rounded-lg p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-3">
                                 <Play className="w-6 h-6 text-blue-400" />
                                 <span className="text-white font-medium">{link.platform}</span>
                               </div>
-                              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
+                              <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                              >
                                 Watch Now
-                              </button>
+                              </a>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-400">No streaming links available at the moment.</p>
+                      <div className="bg-gray-800 rounded-lg p-8 text-center">
+                        <Play className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-yellow-400 mb-2">Coming Soon</h3>
+                        <p className="text-gray-400">Streaming links will be available soon. Please check back later.</p>
+                      </div>
                     )}
                   </div>
                 )}
 
-                {activeTab === 'screenshots' && (
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-white mb-4">Screenshots</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {(movie.downloadLinks || []).map((link) => {
-                        const screenshotImg = movie.images?.find(img => 
-                          img.type === 'screenshot' && img.quality === link.quality
-                        )
-                        return (
-                          <div key={link.quality} className="bg-gray-800 rounded-lg p-4">
-                            <div className="mb-3">
-                              <span className="text-white font-medium">{link.quality} Quality</span>
-                              <span className="text-gray-400 ml-2">({link.size})</span>
-                            </div>
-                            <img
-                              src={screenshotImg?.url || `/images/default-poster.webp`}
-                              alt={`${movie.title} ${link.quality} screenshot`}
-                              className="w-full h-48 object-cover rounded-lg"
-                              onError={(e) => {
-                                e.target.src = '/images/default-poster.webp'
-                              }}
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Tags */}
